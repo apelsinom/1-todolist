@@ -1,27 +1,35 @@
 import React, {ChangeEvent} from 'react';
+import {FilterValueType, TasksType} from "../App";
 
 type InputPropsType = {
-    task: TasksType[]
-    removeTask: (id: string) => void
-    changeTaskStatus: (id: string, isDone: boolean) => void
+    tasks: TasksType
+    todolistId: string
+    filter: FilterValueType
+    removeTask: (todolistId:string, id: string) => void
+    changeTaskStatus: (todolistId: string, id: string, isDone: boolean) => void
 }
-export type TasksType = {
-    id: string,
-    title: string,
+export type TaskType = {
+    id: string
+    title: string
     isDone: boolean
 }
-
 export const InputTodolist = (props: InputPropsType) => {
+    let tasksForTodolist = props.tasks[props.todolistId]
+    if (props.filter==='active') {
+        tasksForTodolist = props.tasks[props.todolistId].filter(t=>t.isDone===true)
+    }
+    if (props.filter==='completed') {
+        tasksForTodolist = props.tasks[props.todolistId].filter(t=>t.isDone===false)
+    }
     return (
         <ul>
-            {props.task.map(t => {
-
+            {tasksForTodolist.map(t => {
                 const onClickHandler = ()=> {
-                    props.removeTask(t.id)
+                    props.removeTask(props.todolistId, t.id)
                 }
                 const onChangeHandler = (e:ChangeEvent<HTMLInputElement>) => {
                     let newIsDonValue = e.currentTarget.checked
-                    props.changeTaskStatus(t.id, newIsDonValue)
+                    props.changeTaskStatus(props.todolistId, t.id, newIsDonValue)
                 }
 
                 return (
