@@ -1,12 +1,20 @@
 import './App.css';
 import {Todolist} from "./components/Todolist";
-import {useState} from "react";
+import {useReducer} from "react";
 import {TaskType} from "./components/InputTodolist";
 import {v1} from "uuid";
 import {AddInputItemForm} from "./components/AddInputItemForm";
+import {
+    addTodolistAC,
+    changeFilterAC,
+    changeTitleTodolistAC,
+    removeTodoListAC,
+    todoListsReducer
+} from "./state/todolisrs-reducer";
+import {addTaskAC, changeTaskStatusAC, changeTaskTitleAC, removeTaskAC, tasksReducer} from "./state/tasks-reducer";
 
 export type FilterValueType = 'all' | 'active' | 'completed';
-type TodoListsType = {
+export type TodoListsType = {
     id: string
     title: string
     filter: FilterValueType
@@ -20,12 +28,12 @@ function App() {
     let todolistID1 = v1()
     let todolistID2 = v1()
 
-    let [todoLists, setTodoLists] = useState<TodoListsType[]>([
+    let [todoLists, dispatchToTodoLists] = useReducer(todoListsReducer, [
         {id: todolistID1, title: 'What to learn', filter: 'all'},
         {id: todolistID2, title: 'What to buy', filter: 'all'},
     ])
 
-    let [tasks, setTasks] = useState<TasksType>({
+    let [tasks, dispatchToTasks] = useReducer(tasksReducer, {
         [todolistID1]: [
             {id: v1(), title: 'HTML&CSS', isDone: true},
             {id: v1(), title: 'JS', isDone: true},
@@ -37,39 +45,36 @@ function App() {
             {id: v1(), title: 'GraphQL', isDone: false},
         ]
     })
+
     function removeTask(todolistId: string, id: string) {
-        setTasks({...tasks, [todolistId]: tasks[todolistId].filter(t => t.id !== id)})
+        dispatchToTasks(removeTaskAC(todolistId, id))
     }
     function addTask(todolistId: string, newTaskTitle: string) {
-        setTasks({...tasks, [todolistId]: [{id: v1(), title: newTaskTitle, isDone: false}, ...tasks[todolistId]]})
-    }
-    function changeFilter(todolistId: string, value: FilterValueType) {
-        setTodoLists(todoLists.map(el => el.id === todolistId ? {...el, filter: value} : el))
+        dispatchToTasks(addTaskAC(todolistId, newTaskTitle))
     }
     function changeTaskStatus(todolistId: string, id: string, isDone: boolean) {
-        setTasks({...tasks, [todolistId]: tasks[todolistId].map(el=> el.id===id ? {...el, isDone: isDone} : el)})
+        dispatchToTasks(changeTaskStatusAC(todolistId, id, isDone))
     }
-    function removeTodoList (todolistId: string) {
-        setTodoLists(todoLists.filter(el=> el.id!==todolistId))
-        delete tasks[todolistId]
+    function changeTitleTask(todolistId: string, id: string, newTitle: string) {
+        dispatchToTasks(changeTaskTitleAC(todolistId, id, newTitle))
+    }
+    function removeTodoList(todolistId: string) {
+        const action = removeTodoListAC(todolistId)
+        dispatchToTodoLists(action)
+        dispatchToTasks(action)
     }
     function addTodolist(newTitle: string) {
-        const newTodolistId = v1()
-        const newTodoList:TodoListsType =  {
-            id: newTodolistId, title: newTitle, filter: 'all'
-        }
-        setTodoLists([ newTodoList, ...todoLists ])
-        setTasks({...tasks, [newTodolistId]:[]})
-        console.log(tasks)
+        const action = addTodolistAC(newTitle);
+        dispatchToTodoLists(action)
+        dispatchToTasks(action)
     }
-    function changeTitleTodolist(todolistId: string, newTitle:string) {
-        setTodoLists(todoLists.map(
-            el=> el.id===todolistId ? {...el, title: newTitle} : el))
+    function changeTitleTodolist(todolistId: string, newTitle: string) {
+        dispatchToTodoLists(changeTitleTodolistAC(todolistId, newTitle))
     }
-    function changeTitleTask(todolistId:string, id:string, newTitle:string) {
-        setTasks({...tasks, [todolistId]: tasks[todolistId].map(
-            el=> el.id===id ? {...el, title: newTitle} : el)})
+    function changeFilter(todolistId: string, value: FilterValueType) {
+        dispatchToTodoLists(changeFilterAC(todolistId, value))
     }
+
     return (
         <div className="App">
             <AddInputItemForm callBack={addTodolist}/>
@@ -98,3 +103,4 @@ function App() {
 }
 
 export default App;
+
