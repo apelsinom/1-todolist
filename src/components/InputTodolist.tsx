@@ -1,6 +1,6 @@
-import React, {ChangeEvent} from 'react';
+import React, {memo, useMemo} from 'react';
 import {FilterValueType, TasksType} from "../App";
-import ChangeableTitle from "./ChangeableTitle";
+import Task from "./Task";
 
 type InputPropsType = {
     tasks: TasksType
@@ -15,18 +15,21 @@ export type TaskType = {
     title: string
     isDone: boolean
 }
-export const InputTodolist = (props: InputPropsType) => {
+export const InputTodolist = memo((props: InputPropsType) => {
     let tasksForTodolist = props.tasks[props.todolistId]
-    if (props.filter==='active') {
-        tasksForTodolist = props.tasks[props.todolistId].filter(t=>t.isDone)
-    }
-    if (props.filter==='completed') {
-        tasksForTodolist = props.tasks[props.todolistId].filter(t=>!t.isDone)
-    }
+    useMemo(() => {
+        if (props.filter === 'active') {
+            tasksForTodolist = props.tasks[props.todolistId].filter(t => t.isDone)
+        }
+        if (props.filter === 'completed') {
+            tasksForTodolist = props.tasks[props.todolistId].filter(t => !t.isDone)
+        }
+        return tasksForTodolist;
+    }, [props.filter])
     return (
         <ul>
             {tasksForTodolist.map(t => {
-                const onClickHandler = ()=> {
+/*                const onClickHandler = ()=> {
                     props.removeTask(props.todolistId, t.id)
                 }
                 const onChangeHandler = (e:ChangeEvent<HTMLInputElement>) => {
@@ -34,19 +37,26 @@ export const InputTodolist = (props: InputPropsType) => {
                     props.changeTaskStatus(props.todolistId, t.id, newIsDonValue)
                 }
                 const changeTitleTaskHandler = (newTitle:string) => {
-                    props.changeTitleTask(props.todolistId, t.id, newTitle)}
+                    props.changeTitleTask(props.todolistId, t.id, newTitle)}*/
 
                 return (
-                    <li key={t.id} className={t.isDone ? 'is-done' : ''}>
+/*                    <li key={t.id} className={t.isDone ? 'is-done' : '' + ' ' + 'input-button-block'}>
                         <input type={'checkbox'}
                                checked={t.isDone}
                                onChange={onChangeHandler}/>
                         <ChangeableTitle title={t.title}
                                          onChange={changeTitleTaskHandler}/>
                         <button onClick={onClickHandler}>✖️</button>
-                    </li>
+                    </li>*/
+                    <Task key={t.id}
+                          todolistId={props.todolistId}
+                          filter={props.filter}
+                          taskTodolist={t}
+                          removeTask={props.removeTask}
+                          changeTaskStatus={props.changeTaskStatus}
+                          changeTitleTask={props.changeTitleTask}/>
                 )
             })}
         </ul>
     )
-}
+})

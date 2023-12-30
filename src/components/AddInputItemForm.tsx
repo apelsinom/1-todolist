@@ -1,9 +1,9 @@
-import React, {ChangeEvent, KeyboardEvent, useState} from "react";
+import React, {ChangeEvent, KeyboardEvent, memo, useState} from "react";
 
 type PropsType = {
     callBack:(newTitle: string) => void
 }
-export const AddInputItemForm = (props: PropsType) => {
+export const AddInputItemForm = memo((props: PropsType) => {
 
     const [newTitle, setTitle] = useState('')
     const [error, setError] = useState<string | null>(null)
@@ -19,17 +19,17 @@ export const AddInputItemForm = (props: PropsType) => {
         }
     }
     const onKeyPressHandler = (event: KeyboardEvent<HTMLInputElement>) => {
-        setError(null)
+        if (error) setError(null);
         if (event.key === 'Enter') addTask();
     }
     return (
-        <div>
+        <div className={'title-block'}>
             <input type={'text'} value={newTitle}
                    onChange={onChangeHandler}
                    onKeyDown={onKeyPressHandler}
                    className={error ? 'error' : ''}/>
             <button onClick={addTask}>+</button>
-            {error && <div className='error-message'>{error}</div>}
+            {error && <div className={'error-message'}>{error}</div>}
         </div>
     );
-};
+});
